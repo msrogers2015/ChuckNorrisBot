@@ -5,6 +5,7 @@ import requests
 
 # Create the Flask application
 app = Flask(__name__)
+status_error = "Sorry, couldn't fetch a joke. Try again later"
 
 # All of the accepted categories from the api
 categories = ["animal","career","celebrity","dev","explicit","fashion","food","history","money","movie","music","political","religion","science","sport","travel"]
@@ -26,7 +27,10 @@ def incoming_sms():
         r = requests.get('https://api.chucknorris.io/jokes/random')
         chuck = r.json()
         joke = chuck['value']
-        resp.message(joke)
+        if r.status_code == 200:
+            resp.message(joke)
+        else:
+            resp.message(status_error)
     # Get a random joke from a category
     elif body[:8] == 'category':
         global categories
@@ -37,9 +41,10 @@ def incoming_sms():
             r = requests.get(f'https://api.chucknorris.io/jokes/random?category={category}')
             chuck = r.json()
             joke = chuck['value']
-            resp.message(joke)
-        else:
-            resp.message("Text 'categories' for a list of acceptable options")
+            if r.status_code == 200:
+                resp.message(joke)
+            else:
+                resp.message(status_error)
 
     # Messaging options
     elif body[:7] == 'options':
@@ -55,6 +60,3 @@ def incoming_sms():
 
 
     return str(resp)
-
-  
- # NOTE: The app.run section isn't needed when using pythonanywhere.
